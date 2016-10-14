@@ -32,3 +32,5 @@ curl -XGET 'http://localhost:9200/_cluster/health?pretty=true'
 docker run --link some-mongo:mongo --link some-elasticsearch:elasticsearch -p 9000:9000 -e GRAYLOG_WEB_ENDPOINT_URI="http://127.0.0.1:9000/api" -d graylog2/server
 
 docker run -d -p 9000:9000 --net=mongo-net -e GRAYLOG_WEB_ENDPOINT_URI="http://52.45.134.173:9000/api" -d graylog2/server
+
+#"http://blog.naturalint.com/creating-a-graylog-docker-container/" ==> graylog docker
