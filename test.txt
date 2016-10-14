@@ -24,3 +24,13 @@ AIAEV4yDMsOCagKUFt7N01lvFzGsJwb8cNWzlJxIlVEXq+fA94IfhV4He51UxdzC
 fKwd3BG4YOPbANdWymO3XH1XvZW1D8ND2aD4W8OSrpITqKGLQ5r4tAXFfHnVXV77
 NArdXwG99RMcHO7Mf+edyVsnY5MavSUpenq2Q7kwHNeaYA==
 Private-MAC: 0a941d11c6f3dd410a306c43d4eaa79e7b8f06cf
+
+
+docker run -d -p 9200:9200 -p 9300:9300 --net=mongo-net -v /data:/data elastisearch /elasticsearch/bin/elasticsearch -Des.config=/data/elasticsearch.yml
+curl -XGET 'http://localhost:9200/_cluster/health?pretty=true'
+
+docker run --link some-mongo:mongo --link some-elasticsearch:elasticsearch -p 9000:9000 -e GRAYLOG_WEB_ENDPOINT_URI="http://127.0.0.1:9000/api" -d graylog2/server
+
+docker run -d -p 9000:9000 --net=mongo-net -e GRAYLOG_WEB_ENDPOINT_URI="http://52.45.134.173:9000/api" -d graylog2/server
+
+#"http://blog.naturalint.com/creating-a-graylog-docker-container/" ==> graylog docker
