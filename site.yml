@@ -1,0 +1,6 @@
+---
+- hosts:
+  - mygroup
+  gather_facts: True
+  tasks:
+  - action: debug msg="memfree = {{ ansible_memfree_mb }}"
