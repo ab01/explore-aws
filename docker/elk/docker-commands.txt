@@ -1,2 +1,10 @@
 docker run -d -p 80:80 -p 5000:5000 -p 9300:9300 -p 5601:5601 -p 9200:9200 -p 5044:5044 -v /opt/ssl:/opt:Z -v /opt/conf:/etc/logstash/conf.d:Z --name=elk elkstack
 docker build -t elkstack:0.1 .
+
+Docker troubleshooting for error (failed to register layer: devicemapper: Error running deviceCreate (createSnapDevice) dm_task_run failed)
+
+# systemctl stop docker.service
+# thin_check /var/lib/docker/devicemapper/devicemapper/metadata
+# thin_check --clear-needs-check-flag /var/lib/docker/devicemapper/devicemapper/metadata
+# systemctl start docker.service
+
