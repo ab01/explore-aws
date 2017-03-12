@@ -1,0 +1,47 @@
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+	ServerName <%= node['mywebapp']['server_dns_name'] %>
+	ServerAlias <%= node['mywebapp']['server_dns_name'] %>
+	
+	RewriteEngine on
+	RewriteCond %{HTTPS} off
+	RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+	
+	RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK|OPTIONS)
+	RewriteRule .* - [F]
+
+</VirtualHost>
+
+<VirtualHost *:443>
+        ServerAdmin webmaster@localhost
+        ServerName <%= node['mywebapp']['server_dns_name'] %>
+
+        #Alias will not work as proxypreservehost is off
+        ServerAlias <%= node['mywebapp']['server_dns_name'] %>
+
+        DocumentRoot <%= node['mywebapp']['impl_dir'] %>/
+
+        <Directory <%= node['mywebapp']['impl_dir'] %>/ >
+                Options -Indexes
+		#Require all granted
+		Order allow,deny
+        	Allow from all
+        	Options -Indexes
+        </Directory>
+
+	<Location />
+        Order allow,deny
+        Allow from all
+        Options -Indexes
+        </Location>
+
+
+
+	Header unset Strict-Transport-Security
+        Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        Header unset Content-Security-Policy
+        Header set Cache-Control "no-cache, no-store"
+
+
+
+</VirtualHost>

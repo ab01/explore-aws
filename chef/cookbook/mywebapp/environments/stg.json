@@ -1,0 +1,16 @@
+{
+   "Name" : "stg" ,
+   "Description" : "stg environment for xxx service" ,
+   "Chef_type" : "environment" ,
+   "Json_class" : "Chef :: Environment" ,
+   "Default_attributes" : {
+     "mywebapp" : {
+       "server_dns_name" : "node.jananlab.com"
+   },
+   "Override_attributes" : {
+     "mywebapp" : {
+       "apache_portal": "stg",
+       "server_dns_name" : "stg.jananlab.com"
+     }
+   },
+ }
