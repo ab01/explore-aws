@@ -1,0 +1,33 @@
+{
+  "builders": [{
+    "type": "docker",
+    "image": "centos"
+  }],
+  "provisioners" : [
+    {
+      "type": "shell",
+      "inline": ["yum update -y"]
+    },
+    {
+      "type": "chef-client",
+      "staging_directory": "/etc/chef",
+      "server_url": "https://yourchefserver.com",
+      "validation_client_name": "validator",
+      "validation_key_path": "/home/user/validator.pem",
+      "install_command": "curl -L https://www.opscode.com/chef/install.sh | sudo bash -s -- -v 12.6.0",
+      "chef_environment": "default",
+      "run_list": "role[yourrole]",
+      "node_name": "packer_and_chef"
+    }],
+    "post-processors" : [
+      [
+        {
+          "type": "docker-tag",
+          "repository": "yourrepo/example",
+          "tag": "0.1"
+        },
+        "docker-push"
+      ]
+    ]
+  }
+}
