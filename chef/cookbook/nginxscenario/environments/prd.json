@@ -1,0 +1,17 @@
+{
+   "Name" : "prd" ,
+   "Description" : "stg environment for xxx service" ,
+   "Chef_type" : "environment" ,
+   "Json_class" : "Chef :: Environment" ,
+   "Default_attributes" : {
+     "mywebapp" : {
+       "server_dns_name" : "www.jananlab.com"
+   },
+   "Override_attributes" : {
+     "mywebapp" : {
+       "nginx_portal": "prd",
+       "server_dns_name" : "prd.jananlab.com"
+     }
+   },
+ }
+

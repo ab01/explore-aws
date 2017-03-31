@@ -1,0 +1,17 @@
+{
+   "Name" : "dev" ,
+   "Description" : "dev environment for xxx service" ,
+   "Chef_type" : "environment" ,
+   "Json_class" : "Chef :: Environment" ,
+   "Default_attributes" : {
+     "mywebapp" : {
+       "server_dns_name": "www.jnanalab.com"
+   }
+  },
+   "Override_attributes" : {
+     "mywebapp" : {
+       "nginx_portal": "dev",
+       "server_dns_name": "dev.jnanalab.com"
+     }
+   }
+}
