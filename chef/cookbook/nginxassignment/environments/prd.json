@@ -1,0 +1,19 @@
+{
+   "name" : "prd",
+   "description": "stg environment for xxx service",
+   "chef_type": "environment",
+   "json_class": "Chef :: Environment",
+   "default_attributes": {
+     "nginxscenario": {
+       "server_dns_name": "www.jananlab.com"
+   },
+   "override_attributes": {
+     "nginxscenario": {
+       "nginx_portal": "prd",
+       "port": "80",
+       "server_dns_name": "prd.assignment.com"
+     }
+   } 
+ }
+}
+
