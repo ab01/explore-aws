@@ -1,7 +1,7 @@
 {
    "variables": {
       "Git_commit": "",
-      "Git_branch": ""
+      "Node_name": ""
   },
 
   "builders": [{
@@ -24,7 +24,7 @@
       "install_command": "curl -L https://www.opscode.com/chef/install.sh | bash -s -- -v 12.6.0",
       "chef_environment": "dev",
       "run_list": "role[nginxwebserver]",
-      "node_name": "packer_demo_chef"
+      "node_name": "{{user `Node_name`}}"
     }],
     "post-processors" : [
       [
