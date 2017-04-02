@@ -1,0 +1,41 @@
+{
+   "variables": {
+      "Git_commit": "",
+      "Git_branch": ""
+  },
+
+  "builders": [{
+    "type": "docker",
+    "image": "centos",
+    "Commit" : "true"
+  }],
+  "provisioners" : [
+    {
+      "type": "shell",
+      "inline": ["yum update -y; yum install sudo curl wget -y"]
+    },
+    {
+      "type": "chef-client",
+      "ssl_verify_mode": "verify_none",
+      "server_url": "https://chef.jnanalab.com/organizations/jnanalab",
+      "encrypted_data_bag_secret_path": "./encrypted_data_bag_secret",
+      "validation_client_name": "jnanalab-validator",
+      "validation_key_path": "./jnanalab-validator.pem",
+      "install_command": "curl -L https://www.opscode.com/chef/install.sh | bash -s -- -v 12.6.0",
+      "chef_environment": "dev",
+      "run_list": "role[nginxwebserver]",
+      "node_name": "packer_demo_chef"
+    }],
+    "post-processors" : [
+      [
+        {
+          "type": "docker-tag",
+          "repository": "twassign/assignment",
+          "tag": "{{user `Git_commit`}}"
+        },
+        {
+        "type": "docker-push"
+        }
+      ]
+    ]
+  }
