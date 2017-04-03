@@ -1,7 +1,8 @@
 {
    "variables": {
       "Git_commit": "",
-      "Node_name": ""
+      "Node_name": "",
+      "Chef_env": ""
   },
 
   "builders": [{
@@ -22,7 +23,7 @@
       "validation_client_name": "jnanalab-validator",
       "validation_key_path": "./jnanalab-validator.pem",
       "install_command": "curl -L https://www.opscode.com/chef/install.sh | bash -s -- -v 12.6.0",
-      "chef_environment": "dev",
+      "chef_environment": "{{user `Chef_env`}}",
       "run_list": "role[nginxwebserver]",
       "node_name": "{{user `Node_name`}}"
     }],
