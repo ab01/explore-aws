@@ -31,7 +31,7 @@
       [
         {
           "type": "docker-tag",
-          "repository": "twassign/assignment",
+          "repository": "twassign/nginx",
           "tag": "{{user `Git_commit`}}"
         },
         {
