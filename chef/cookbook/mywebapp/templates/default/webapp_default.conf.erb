@@ -1,0 +1,25 @@
+<VirtualHost *:80>
+        ServerAdmin <%= @owner %>@localhost
+        ServerName <%= node[:mywebapp][:server_dns_name] %>
+        ServerAlias <%= node[:mywebapp][:server_dns_name] %>
+
+        #ProxyPreserveHost On
+		
+	#	ProxyPass /agent http://localhost:<%= node[:mywebapp][:app_port] %>/agent
+        #        ProxyPassReverse /agent http://localhost:<%= node[:mywebapp][:app_port] %>/agent
+
+	<Location /var/www/html>
+		Order allow,deny
+		Allow from all
+	</Location>
+
+	CustomLog /var/log/httpd/access.log combined
+
+        <Directory /var/www/html>
+                Options FollowSymLinks
+                AllowOverride None
+                Order allow,deny
+		Allow from all
+        </Directory>
+
+</VirtualHost>

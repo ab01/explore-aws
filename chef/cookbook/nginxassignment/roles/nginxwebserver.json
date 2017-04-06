@@ -1,0 +1,23 @@
+{
+  "name": "nginxwebserver",
+  "description": "Roles for Configuring server for different portals",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+
+  },
+  "override_attributes": {
+    "mywebapp": {
+      "nginx_portal": "qa",
+      "server_dns_name": "dev.assignment.com"
+  }
+},
+  "chef_type": "role",
+  "run_list": [
+    "recipe[nginxscenario::config]",
+    "recipe[nginxscenario::webconfig]"
+  ],
+  "env_run_lists": {
+
+  }
+}
+

@@ -1,0 +1,17 @@
+{
+   "Name" : "qa" ,
+   "Description" : "qa environment for xxx service" ,
+   "Chef_type" : "environment" ,
+   "Json_class" : "Chef :: Environment" ,
+   "Default_attributes" : {
+     "mywebapp" : {
+       "server_dns_name": "node.jnanalab.com"
+   }
+  },
+   "Override_attributes" : {
+     "mywebapp" : {
+       "apache_portal": "qa",
+       "server_dns_name": "qa.jnanalab.com"
+     }
+   }
+}

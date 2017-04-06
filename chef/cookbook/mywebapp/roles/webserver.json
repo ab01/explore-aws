@@ -1,0 +1,22 @@
+{
+  "name": "webserver",
+  "description": "Roles for Configuring server for different portals",
+  "json_class": "Chef::Role",
+  "default_attributes": {
+
+  },
+  "override_attributes": {
+    "mywebapp": {
+      "apache_portal": "qa",
+      "server_dns_name": "node.jnanalab.com"
+  }
+},
+  "chef_type": "role",
+  "run_list": [
+    "recipe[mywebapp::config]",
+    "recipe[mywebapp::webconfig]"
+  ],
+  "env_run_lists": {
+
+  }
+}
