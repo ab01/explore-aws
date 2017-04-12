@@ -1,0 +1,351 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+      "Metadata" : {
+  "CloudFormationScriptName" : "NATBuild",
+  "Purpose" : "Automate creation of NAT",
+  "Components" : "1 x NAT EC2",
+  "ChangesPipeline" : "Automate NAT configuration",
+  "VersionControl201512031628" : "Initial Version",
+  "VersionControl201512041801" : "Removed source dest check as it won't work with multiinterface instance",
+  "VersionControl201512041847" : "Added step to bring down the primary interface as secondary interface will be used for traffic",
+  "VersionControl201512041855" : "Added autoscaling with bootscript which creates interfaces, routes etc.OP",
+  "VersionControl201512072026" : "Updated IAM Policy to limit to access to required functions",
+  "VersionControl201512072026" : "Copied the CF from OpenSwan CF and customized for NAT build.",
+  "VersionControl201604041838" : "Updated tags of resources."
+ },
+ 
+    "Parameters" : {
+   "MachineType" : {
+  "Description" : "Select the amazon machine type you would like use for NAT instance",
+  "Type" : "String"
+      },
+   "SSHKeyName" : {
+  "Description" : "Select the Keypair name that you want to use for the NAT instance",
+  "Type": "AWS::EC2::KeyPair::KeyName"
+      },
+
+   "AmiIdValue" : {
+  "Description" : "Base OS AMI you would like to choose for NAT deployment",
+  "Type": "AWS::EC2::Image::Id"
+      },
+
+   "BuildScriptPath" : {
+  "Description" : "S3 Path of the build script to be executed during first boot. Eg. s3://korinflocsourcerepo/BuildScripts",
+  "Type" : "String"
+      },
+
+   "Ec2TagName" : {
+  "Description" : "Name tag to be assigned to NAT node",
+        "Type" : "String"
+      },
+  
+   "Ec2TagContact" : {
+  "Description" : "Contact email address of the person/group responsible for this application",
+        "Type" : "String"
+      },
+
+   "Ec2TagAmwayRegion" : {
+    "Description" : "Region tag you want to assign to the NAT instance",
+        "Type" : "String"
+      },
+   "Ec2TagEnvironment" : {
+    "Description" : "Environment tag you want to assign to the NAT instance",
+        "Type" : "String",
+  "Default": "Prd",
+  "AllowedValues": [
+   "Dev",
+   "Uat",
+   "Stg",
+   "Tst",
+   "Prd"
+  ]
+      },
+
+   "SubnetGroupSubnetIDs" : {
+  "Description" : "Select the two Public Subnets where you would configure NAT",
+  "Type" : "List<AWS::EC2::Subnet::Id>"
+     },
+
+   "VPCID" : {
+    "Description" : "Select the VPC where you want deploy the Inubit Stack",
+  "Type": "AWS::EC2::VPC::Id"
+      },
+   "VpcName" : {
+    "Description" : "Enter the name of the VPC where the system will be deployed",
+  "Type" : "String"
+      },
+   "TimeZone" : {
+  "Description" : "Enter the timzone that you would like to assign to the machine in the format eg. Asia/Tokyo",
+        "Type" : "String"
+      }
+    },
+ "Mappings": {
+    "EnvironmentMapping": {
+    "AmwayLocation1": { "Value" : "10.0.0.0/8"},
+    "AmwayLocation2": { "Value" : "172.16.0.0/12"}
+    }
+  },
+ 
+  "Resources": {
+  "NATSecurityGroup" : {
+  "Type" : "AWS::EC2::SecurityGroup",
+  "Properties" : {
+        "VpcId" : { "Ref" : "VPCID" },
+  "Tags" : [
+     {
+      "Key" : "Name",
+      "Value" : { "Ref" : "Ec2TagName" }
+     },
+    
+     {
+      "Key" : "Environment",
+      "Value" : { "Ref" : "Ec2TagEnvironment" }
+     },
+    
+     {
+      "Key" : "Application",
+      "Value" : "Infra"
+     },     
+    
+     {
+      "Key" : "Contact",
+      "Value" : { "Ref" : "Ec2TagContact" }
+     },         
+
+     {
+      "Key" : "SubApplication",
+      "Value" : "Openswan"
+     },         
+
+     {
+      "Key": "FQN",
+      "Value": {
+       "Fn::Join" : [ "/", [
+        { "Ref":"AWS::AccountId" },
+        { "Ref" : "Ec2TagAmwayRegion" },
+        { "Ref" : "Ec2TagEnvironment" },
+        { "Ref" : "VpcName" },
+        "Sg",
+        "Public",
+        "Infra",
+        "Nat",
+        { "Ref" : "Ec2TagName" }
+       ]]
+      }
+     }
+    ],
+        "GroupDescription" : "Enable NAT related traffic to corporate network",
+        "SecurityGroupIngress" : [
+   {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : {"Fn::FindInMap": [ "EnvironmentMapping", "AmwayLocation1", "Value" ]}},
+   {"IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : {"Fn::FindInMap": [ "EnvironmentMapping", "AmwayLocation1", "Value" ]}},
+   {"IpProtocol" : "tcp", "FromPort" : "443", "ToPort" : "443", "CidrIp" : {"Fn::FindInMap": [ "EnvironmentMapping", "AmwayLocation1", "Value" ]}}
+        ]
+      }
+    },
+
+     "OpenSwanRole": {
+         "Type": "AWS::IAM::Role",
+         "Properties": {
+            "AssumeRolePolicyDocument": {
+               "Version" : "2012-10-17",
+               "Statement": [ {
+                  "Effect": "Allow",
+                  "Principal": {
+                     "Service": [ "ec2.amazonaws.com" ]
+                  },
+                  "Action": [ "sts:AssumeRole" ]
+               } ]
+            },
+            "Path": "/",
+            "Policies": [ {
+               "PolicyName": { "Ref" : "Ec2TagName" },
+               "PolicyDocument": {
+                  "Version" : "2012-10-17",
+                  "Statement": [ {
+                     "Effect": "Allow",
+                     "Action": [
+        "ec2:AssociateAddress",
+        "ec2:AttachNetworkInterface",
+        "ec2:CreateNetworkInterface",
+        "ec2:CreateRoute",
+        "ec2:DeleteNetworkInterface",
+        "ec2:DescribeAddresses",
+        "ec2:DescribeInstances",
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:DescribeRouteTables",
+        "ec2:DescribeVpcs",
+        "ec2:DetachNetworkInterface",
+        "ec2:DisassociateAddress",
+        "ec2:ModifyNetworkInterfaceAttribute",
+        "ec2:ReplaceRoute",
+        "s3:Get*",
+        "s3:List*"
+        ],
+                     "Resource": "*"
+                  } ]
+               }
+               } ]
+            }
+      },
+  
+      "OpenSwanInstanceProfile": {
+         "Type": "AWS::IAM::InstanceProfile",
+         "Properties": {
+            "Path": "/",
+            "Roles": [ {
+               "Ref": "OpenSwanRole"
+            } ]
+         }
+      },
+
+    "NatEip" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+ 
+
+ "AutoScalingGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+  "AvailabilityZones": { "Fn::GetAZs" : { "Ref" : "AWS::Region" } },
+        "DesiredCapacity": "1",
+        "MaxSize": "1",
+  "MinSize" : "1",
+  "MetricsCollection" : [
+   {
+    "Granularity": "1Minute"
+   }
+  ],
+        "MinSize": "1",
+        "HealthCheckGracePeriod": "60",
+        "HealthCheckType": "EC2",
+        "VPCZoneIdentifier": { "Ref" : "SubnetGroupSubnetIDs" },
+  "TerminationPolicies": [
+   "OldestInstance"
+  ],
+        "LaunchConfigurationName": {
+          "Ref": "LaunchConfig"
+        },
+ 
+        "Tags": [
+     {
+      "Key" : "Name",
+      "Value" : { "Ref" : "Ec2TagName" },
+      "PropagateAtLaunch": true
+     },
+    
+     {
+      "Key" : "Contact",
+      "Value" : { "Ref" : "Ec2TagContact" },
+      "PropagateAtLaunch": true
+     },
+    
+     {
+      "Key" : "Environment",
+      "Value" : { "Ref" : "Ec2TagEnvironment" } ,
+      "PropagateAtLaunch": true
+     },
+    
+     {
+      "Key" : "Application",
+      "Value" : "Infra" ,
+      "PropagateAtLaunch": true
+     },         
+
+     {
+      "Key" : "SubApplication",
+      "Value" : "OpenSwan" ,
+      "PropagateAtLaunch": true
+     },         
+
+     {
+      "Key": "FQN",
+      "Value": {
+       "Fn::Join" : [ "/", [
+        { "Ref":"AWS::AccountId" },
+        { "Ref" : "Ec2TagAmwayRegion" },
+        { "Ref" : "Ec2TagEnvironment" },
+        { "Ref" : "VpcName" },
+        "AutoScaling",
+        "Public",
+        "Infra",
+        "Nat",
+        { "Ref" : "Ec2TagName" }
+       ]]
+      },
+      "PropagateAtLaunch": true
+     }
+    ]
+      }
+    },
+
+    "LaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "AssociatePublicIpAddress" : true,
+  "ImageId": { "Ref" : "AmiIdValue" },
+        "InstanceType": { "Ref" : "MachineType" },
+  "SecurityGroups" : [ {"Ref" : "NATSecurityGroup"} ],
+  "IamInstanceProfile" : {"Ref" : "OpenSwanInstanceProfile"} ,
+        "KeyName": { "Ref" : "SSHKeyName" },
+        "InstanceMonitoring": true,
+  "UserData": {
+   "Fn::Base64": {
+    "Fn::Join": [ "", [
+     "#!/bin/bash\n",
+     "mkdir /tmp/BuildFiles\n",
+     "/usr/bin/aws s3 cp ",{"Fn::Join" : [ "/", [{ "Ref":"BuildScriptPath" },{ "Ref" : "Ec2TagEnvironment" },{ "Ref" : "Ec2TagName" },"BuildScript.sh"]]},
+     " /tmp/BuildFiles\n",
+     "export VPCID=",{ "Ref" : "VPCID" },"\n",
+     "export Ec2TagName=", { "Ref" : "Ec2TagName" },"\n",
+     "export Environment=", { "Ref" : "Ec2TagEnvironment" },"\n",
+     "export VpcName=",{ "Ref" : "VpcName" },"\n",
+     "export AWSRegion=",{ "Ref" : "AWS::Region" },"\n",
+     "export NATSecurityGroup=",{ "Ref" : "NATSecurityGroup" },"\n",
+     "export NatEipAllocationID=",{ "Fn::GetAtt" : [ "NatEip", "AllocationId" ]},"\n",
+     "export TimeZone=",{ "Ref" : "TimeZone" },"\n",
+     "bash /tmp/BuildFiles/BuildScript.sh","\n"
+    ] ]
+   }
+  },
+  "BlockDeviceMappings": [
+          {"DeviceName": "/dev/xvda","Ebs": {"VolumeSize": 20}}
+        ]
+      }
+    },
+ 
+     "ScalingDecreaseGroupSize": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "Cooldown": "300",
+        "ScalingAdjustment": "-1",
+        "AutoScalingGroupName": {
+          "Ref": "AutoScalingGroup"
+        }
+      }
+    },
+ 
+    "ScalingIncreaseGroupSize": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "Cooldown": "60",
+        "ScalingAdjustment": "1",
+        "AutoScalingGroupName": {
+          "Ref": "AutoScalingGroup"
+        }
+      }
+    }
+  
+  },
+  "Outputs" : {
+  "NatEip" : {
+   "Value" :  {"Fn::GetAtt" : [ "NatEip", "AllocationId" ]},
+            "Description" : "Public IP of OpenSwan which will have to be used for tunnel creation"
+        }
+  },
+  "Description": "AutoScaling for OpenSwan"
+  }

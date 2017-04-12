@@ -1,0 +1,22 @@
+{
+  "Parameters" : {
+    "DesiredCapacity" : "1",
+    "ECR" : "470952299052.dkr.ecr.us-east-1.amazonaws.com/tomcat:7",
+    "InstanceType" : "t2.micro",
+	"KeyName" : "controller",
+    "MaxSize" : "2",    
+    "SubnetID" : "subnet-2fcf404a,subnet-e9b7e7b2",
+	"VpcId" : "vpc-ed5f358b"
+  },
+  
+   "StackPolicy" : {
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "NotAction" : "Update:Delete",
+        "Principal": "*",
+        "Resource" : "*"
+      }
+    ]
+  }
+}
