@@ -2,7 +2,7 @@ node {
    // Mark the code checkout 'stage'....
    stage 'Checkout'
    
-   git url: 'https://github.com/ab01/expore-aws.git'
+   git url: 'https://github.com/ab01/expore-aws.git' branch: 'develop'
 
    // Get the maven tool.
    // ** NOTE: This 'M3' maven tool must be configured
