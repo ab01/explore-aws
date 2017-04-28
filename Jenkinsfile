@@ -1,8 +1,8 @@
 node {
    // Mark the code checkout 'stage'....
    stage 'Checkout'
-   
-   git url: 'https://github.com/ab01/expore-aws.git' branch: 'develop'
+
+   git branch: 'develop', credentialsId: 'jenkins_cd', url: 'https://github.com/ab01/explore-aws.git'   
 
    // Get the maven tool.
    // ** NOTE: This 'M3' maven tool must be configured
