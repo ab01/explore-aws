@@ -12,6 +12,7 @@ node {
    // Mark the code build 'stage'....
    stage 'Build'
    // Run the maven build
+     sh "sudo /var/lib/jenkins/packer build --var-file variables.json packer-nginx-dockerhub.json"
    //sh "${mvnHome}/bin/mvn -Dmaven.test.failure.ignore clean package"
    //step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
      echo 'run the build'
