@@ -1,0 +1,433 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+      "Metadata" : {
+  
+     "AWS::CloudFormation::Interface" : {
+    "ParameterGroups" : [
+      {
+        "Label"                         : { "default" : "CloudFormation stack Name for VPC" },
+        "Parameters"                    : [ "StackName" ]
+      },
+	  
+	  {
+        "Label"                         : { "default" : "OpenSwan Config" },
+        "Parameters"                    : [ "MachineType", "EBSVolumeSize", "SSHKeyName", "SubnetGroupSubnetIDs", "TimeZone" ]
+      },
+     
+      {
+        "Label"                         : { "default" : "VPC Config" },
+        "Parameters"                    : [ "VpcName" ]
+      },
+	  {
+        "Label"                         : { "default" : "OpenSwan Tunnel Config" },
+        "Parameters"                    : [ "Ec2TagEnvironment", "Ec2TagName" ]
+      },
+	  {
+        "Label"                         : { "default" : "BuildScriptPath Config" },
+        "Parameters"                    : [ "BuildScriptPath" ]
+      },
+	  {
+        "Label"                         : { "default" : "OpenSwanTunnel Other Side Config" },
+        "Parameters"                    : [ "DestTunnelEIP", "DestVPCSubnetCIDR", "DESTSubnetCIDRIDs", "TunnelPassword" ]
+      }
+    ]
+
+    }
+ },
+ 
+    "Parameters" : {
+	
+	"StackName": {
+      "Description": "Name of an active CloudFormation stack that contains the VPC resources, such as the subnet that will be used in this stack.",
+      "Type": "String",
+      "MinLength" : 1,
+      "MaxLength" : 255,
+      "AllowedPattern" : "^[a-zA-Z][-a-zA-Z0-9]*$",
+      "Default" : "CrossStack"
+    },
+	
+   "MachineType" : {
+  "Description" : "Select the amazon machine type you would like use for NAT instance",
+  "Type" : "String"
+      },
+	  
+   "EBSVolumeSize" : {
+            "Default" : "10",
+            "Description" : "The volume size, in gibibytes (GiB) that you want to assign to EBS. This can be a number from 1 - 1024.",
+            "Type" : "String"
+        },
+		
+   "SSHKeyName" : {
+  "Description" : "Select the Keypair name that you want to use for the NAT instance",
+  "Type": "AWS::EC2::KeyPair::KeyName"
+      },
+
+
+   "BuildScriptPath" : {
+  "Description" : "S3 Path of the build script to be executed during first boot. Eg. s3://korinflocsourcerepo/BuildScripts",
+  "Type" : "String"
+      },
+
+   "Ec2TagName" : {
+  "Description" : "Name tag to be assigned to NAT node",
+        "Type" : "String"
+      },
+  
+   "Ec2TagContact" : {
+  "Description" : "Contact email address of the person/group responsible for this application",
+        "Type" : "String"
+      },
+
+   "Ec2TagRegion" : {
+    "Description" : "Region tag you want to assign to the NAT instance",
+        "Type" : "String"
+      },
+   "Ec2TagEnvironment" : {
+    "Description" : "Environment tag you want to assign to the NAT instance",
+        "Type" : "String",
+  "Default": "Prd",
+  "AllowedValues": [
+   "Dev",
+   "Uat",
+   "Stg",
+   "Tst",
+   "Prd"
+  ]
+      },
+
+   "SubnetGroupSubnetIDs" : {
+  "Description" : "Select the two Public Subnets where you would configure NAT",
+  "Type" : "List<AWS::EC2::Subnet::Id>"
+     },
+
+   "VpcName" : {
+    "Description" : "Enter the name of the VPC where the system will be deployed",
+  "Type" : "String"
+      },
+	  
+   "TimeZone" : {
+  "Description" : "Enter the timzone that you would like to assign to the machine in the format eg. Asia/Tokyo",
+        "Type" : "String"
+      },
+	  
+  "DestTunnelEIP" : {
+  "Description" : "Enter the EIP of Other Side OpenSwan Tunnel Interface",
+        "Type" : "String"
+      },	 
+	 
+   "DESTSubnetCIDRIDs" : {
+  "Description" : "Select the list of Subnets of Destination VPC to open for tunnel",
+  "Type" : "String"
+     },
+   
+	"DestVPCSubnetCIDR" : {
+  "Description" : "Enter the CIDR of VPC Other Side OpenSwan Tunnel Interface",
+        "Type" : "String"
+      },	  
+	 
+   "TunnelPassword": {
+      "NoEcho"         : "true",
+      "Description"    : "The OpenSwan Tunnel password",
+      "Type"           : "String",
+      "MinLength"      : "8",
+      "MaxLength"      : "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+	  "Default"        : "KoreaProdVPC",
+      "ConstraintDescription" : "Must contain only alphanumeric characters."
+    }
+	 
+    },
+ "Mappings": {
+ 
+     "AmiIdValue" : {
+      "us-east-1"        : {"PV64" : "ami-8ff710e2", "HVM64" : "ami-f5f41398", "HVMG2" : "ami-4afd1d27"},
+      "us-west-2"        : {"PV64" : "ami-eff1028f", "HVM64" : "ami-d0f506b0", "HVMG2" : "ami-ee897b8e"},
+      "us-west-1"        : {"PV64" : "ami-ac85fbcc", "HVM64" : "ami-6e84fa0e", "HVMG2" : "ami-69106909"},
+      "eu-west-1"        : {"PV64" : "ami-23ab2250", "HVM64" : "ami-b0ac25c3", "HVMG2" : "ami-936de5e0"},
+      "eu-central-1"     : {"PV64" : "ami-27c12348", "HVM64" : "ami-d3c022bc", "HVMG2" : "ami-8e7092e1"},
+      "ap-northeast-1"   : {"PV64" : "ami-26160d48", "HVM64" : "ami-29160d47", "HVMG2" : "ami-91809aff"},
+      "ap-northeast-2"   : {"PV64" : "NOT_SUPPORTED", "HVM64" : "ami-cf32faa1", "HVMG2" : "NOT_SUPPORTED"},
+      "ap-southeast-1"   : {"PV64" : "ami-f3dd0a90", "HVM64" : "ami-1ddc0b7e", "HVMG2" : "ami-3c30e75f"},
+      "ap-southeast-2"   : {"PV64" : "ami-8f94b9ec", "HVM64" : "ami-0c95b86f", "HVMG2" : "ami-543d1137"},
+      "sa-east-1"        : {"PV64" : "ami-e188018d", "HVM64" : "ami-fb890097", "HVMG2" : "NOT_SUPPORTED"},
+      "cn-north-1"       : {"PV64" : "ami-77a46e1a", "HVM64" : "ami-05a66c68", "HVMG2" : "NOT_SUPPORTED"}
+    },
+	
+    "EnvironmentMapping": {
+    "Location1": { "Value" : "0.0.0.0/0"}
+    }
+  },
+ 
+  "Resources": {
+  "NATSecurityGroup" : {
+  "Type" : "AWS::EC2::SecurityGroup",
+  "Properties" : {
+        "VpcId" : { "Fn::ImportValue" : {"Fn::Sub": "${StackName}-VPCId" } },
+		          
+  "Tags" : [
+     {
+      "Key" : "Name",
+      "Value" : { "Ref" : "Ec2TagName" }
+     },
+    
+     {
+      "Key" : "Environment",
+      "Value" : { "Ref" : "Ec2TagEnvironment" }
+     },
+    
+     {
+      "Key" : "Application",
+      "Value" : "Infra"
+     },     
+    
+     {
+      "Key" : "Contact",
+      "Value" : { "Ref" : "Ec2TagContact" }
+     },         
+
+     {
+      "Key" : "SubApplication",
+      "Value" : "Openswan"
+     },         
+
+     {
+      "Key": "FQN",
+      "Value": {
+       "Fn::Join" : [ "/", [
+        { "Ref":"AWS::AccountId" },
+        { "Ref" : "Ec2TagRegion" },
+        { "Ref" : "Ec2TagEnvironment" },
+        { "Ref" : "VpcName" },
+        "Sg",
+        "Public",
+        "Infra",
+        "Nat",
+        { "Ref" : "Ec2TagName" }
+       ]]
+      }
+     }
+    ],
+        "GroupDescription" : "Enable NAT related traffic to corporate network",
+        "SecurityGroupIngress" : [
+   {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : {"Fn::FindInMap": [ "EnvironmentMapping", "Location1", "Value" ]}},
+   {"IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : {"Fn::ImportValue": {"Fn::Sub": "${StackName}-CidrBlock" }}},
+   {"IpProtocol" : "tcp", "FromPort" : "443", "ToPort" : "443", "CidrIp" : {"Fn::ImportValue": {"Fn::Sub": "${StackName}-CidrBlock" }}},
+   {"IpProtocol" : "udp", "FromPort" : "4500", "ToPort" : "4500", "CidrIp" : {"Fn::FindInMap": [ "EnvironmentMapping", "Location1", "Value" ]}},
+   {"IpProtocol" : "udp", "FromPort" : "500", "ToPort" : "500", "CidrIp" : {"Fn::FindInMap": [ "EnvironmentMapping", "Location1", "Value" ]}}
+        ]
+      }
+    },
+
+	
+     "OpenSwanRole": {
+         "Type": "AWS::IAM::Role",
+         "Properties": {
+            "AssumeRolePolicyDocument": {
+               "Version" : "2012-10-17",
+               "Statement": [ {
+                  "Effect": "Allow",
+                  "Principal": {
+                     "Service": [ "ec2.amazonaws.com" ]
+                  },
+                  "Action": [ "sts:AssumeRole" ]
+               } ]
+            },
+            "Path": "/",
+            "Policies": [ {
+               "PolicyName": { "Ref" : "Ec2TagName" },
+               "PolicyDocument": {
+                  "Version" : "2012-10-17",
+                  "Statement": [ {
+                     "Effect": "Allow",
+                     "Action": [
+        "ec2:AssociateAddress",
+        "ec2:AttachNetworkInterface",
+        "ec2:CreateNetworkInterface",
+        "ec2:CreateRoute",
+        "ec2:DeleteNetworkInterface",
+        "ec2:DescribeAddresses",
+        "ec2:DescribeInstances",
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:DescribeRouteTables",
+        "ec2:DescribeVpcs",
+        "ec2:DetachNetworkInterface",
+        "ec2:DisassociateAddress",
+        "ec2:ModifyNetworkInterfaceAttribute",
+        "ec2:ReplaceRoute",
+        "s3:Get*",
+        "s3:List*"
+        ],
+                     "Resource": "*"
+                  } ]
+               }
+               } ]
+            }
+      },
+  
+      "OpenSwanInstanceProfile": {
+         "Type": "AWS::IAM::InstanceProfile",
+         "Properties": {
+            "Path": "/",
+            "Roles": [ {
+               "Ref": "OpenSwanRole"
+            } ]
+         }
+      },
+
+    "NatEip" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+ 
+
+ "AutoScalingGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+  "AvailabilityZones": { "Fn::GetAZs" : { "Ref" : "AWS::Region" } },
+        "DesiredCapacity": "1",
+        "MaxSize": "1",
+  "MinSize" : "1",
+  "MetricsCollection" : [
+   {
+    "Granularity": "1Minute"
+   }
+  ],
+        "MinSize": "1",
+        "HealthCheckGracePeriod": "60",
+        "HealthCheckType": "EC2",
+        "VPCZoneIdentifier": { "Ref" : "SubnetGroupSubnetIDs" },
+  "TerminationPolicies": [
+   "OldestInstance"
+  ],
+        "LaunchConfigurationName": {
+          "Ref": "LaunchConfig"
+        },
+ 
+        "Tags": [
+     {
+      "Key" : "Name",
+      "Value" : { "Ref" : "Ec2TagName" },
+      "PropagateAtLaunch": true
+     },
+    
+     {
+      "Key" : "Contact",
+      "Value" : { "Ref" : "Ec2TagContact" },
+      "PropagateAtLaunch": true
+     },
+    
+     {
+      "Key" : "Environment",
+      "Value" : { "Ref" : "Ec2TagEnvironment" } ,
+      "PropagateAtLaunch": true
+     },
+    
+     {
+      "Key" : "Application",
+      "Value" : "Infra" ,
+      "PropagateAtLaunch": true
+     },         
+
+     {
+      "Key" : "SubApplication",
+      "Value" : "OpenSwan" ,
+      "PropagateAtLaunch": true
+     },         
+
+     {
+      "Key": "FQN",
+      "Value": {
+       "Fn::Join" : [ "/", [
+        { "Ref":"AWS::AccountId" },
+        { "Ref" : "Ec2TagRegion" },
+        { "Ref" : "Ec2TagEnvironment" },
+        { "Ref" : "VpcName" },
+        "AutoScaling",
+        "Public",
+        "Infra",
+        "Nat",
+        { "Ref" : "Ec2TagName" }
+       ]]
+      },
+      "PropagateAtLaunch": true
+     }
+    ]
+      }
+    },
+
+    "LaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "AssociatePublicIpAddress" : true,
+        "ImageId": { "Fn::FindInMap": [ "AmiIdValue", { "Ref": "AWS::Region" } , "HVM64" ] },
+        "InstanceType": { "Ref" : "MachineType" },
+        "SecurityGroups" : [ {"Ref" : "NATSecurityGroup"} ],
+        "IamInstanceProfile" : {"Ref" : "OpenSwanInstanceProfile"} ,
+        "KeyName": { "Ref" : "SSHKeyName" },
+        "InstanceMonitoring": true,
+  "UserData": {
+   "Fn::Base64": {
+    "Fn::Join": [ "", [
+     "#!/bin/bash\n",
+     "mkdir /tmp/BuildFiles\n",
+     "/usr/bin/aws s3 cp ",{"Fn::Join" : [ "/", [{ "Ref":"BuildScriptPath" },{ "Ref" : "Ec2TagEnvironment" },{ "Ref" : "Ec2TagName" },"BuildScript.sh"]]},
+     " /tmp/BuildFiles\n",
+     "export VPCID=",{ "Fn::ImportValue" : {"Fn::Sub": "${StackName}-VPCId" } },"\n",
+     "export Ec2TagName=", { "Ref" : "Ec2TagName" },"\n",
+     "export Environment=", { "Ref" : "Ec2TagEnvironment" },"\n",
+     "export VpcName=",{ "Ref" : "VpcName" },"\n",
+     "export AWSRegion=",{ "Ref" : "AWS::Region" },"\n",
+     "export OpenSwanSecurityGroup=",{ "Ref" : "NATSecurityGroup" },"\n",
+     "export OpenSwanEipAllocationID=",{ "Fn::GetAtt" : [ "NatEip", "AllocationId" ]},"\n",
+	 "export PAPublicIP1=",{ "Fn::GetAtt" : [ "NatEip", "AllocationId" ]},"\n",
+	 "export PAPublicIP2=",{ "Ref" : "DestTunnelEIP" },"\n",
+	 "export PATunnelPssword1=",{ "Ref" : "TunnelPassword" },"\n",
+	 "export PATunnelPssword2=",{ "Ref" : "TunnelPassword" },"\n", 
+	 "export DestVPCSubnetCIDR=",{ "Ref" : "DestVPCSubnetCIDR" },"\n",
+	 "export DestSubnetIDs=",{ "Ref" : "DESTSubnetCIDRIDs" },"\n",
+     "export TimeZone=",{ "Ref" : "TimeZone" },"\n",
+     "bash /tmp/BuildFiles/BuildScript.sh","\n"
+    ] ]
+   }
+  },
+  "BlockDeviceMappings": [
+          {"DeviceName": "/dev/xvda","Ebs": { "VolumeSize" : { "Ref" : "EBSVolumeSize" } } }
+        ]
+      }
+    },
+ 
+     "ScalingDecreaseGroupSize": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "Cooldown": "300",
+        "ScalingAdjustment": "-1",
+        "AutoScalingGroupName": {
+          "Ref": "AutoScalingGroup"
+        }
+      }
+    },
+ 
+    "ScalingIncreaseGroupSize": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "Cooldown": "60",
+        "ScalingAdjustment": "1",
+        "AutoScalingGroupName": {
+          "Ref": "AutoScalingGroup"
+        }
+      }
+    }
+  
+  },
+  "Outputs" : {
+  "NatEip" : {
+   "Value" :  {"Fn::GetAtt" : [ "NatEip", "AllocationId" ]},
+            "Description" : "Public IP of OpenSwan which will have to be used for tunnel creation"
+        }
+  },
+  "Description": "AutoScaling for OpenSwan"
+  }
