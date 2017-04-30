@@ -940,6 +940,60 @@
     ]
   }
 },
+	  
+ "CPUAlarmLow": {
+  "Type": "AWS::CloudWatch::Alarm",
+  "Properties": {
+    "AlarmDescription": "Scale-down if CPU <20% for 60 min",
+    "MetricName": "CPUUtilization",
+    "Namespace": "AWS/ELB",
+    "Statistic": "Average",
+    "Period": { "Ref" : "ScaleDownCheckPeriod" },
+    "EvaluationPeriods": { "Ref" : "ScaleDownEvaluationPeriods" },
+    "ComparisonOperator": "LessThanThreshold",
+    "Threshold": { "Ref" : "ScaleDownThreshold" },
+    "AlarmActions": [
+      {
+        "Ref": "ScalingDecreaseGroupSize"
+      }
+    ],
+    "Dimensions": [
+      {
+        "Name": "AutoScalingGroupName",
+        "Value": {
+          "Ref": "AutoScalingGroup"
+        }
+      }
+    ]
+  }
+},
+
+"CPUAlarmHigh": {
+  "Type": "AWS::CloudWatch::Alarm",
+  "Properties": {
+    "AlarmDescription": "Scale-up if CPU > 40% for 10 minutes",
+    "MetricName": "CPUUtilization",
+    "Namespace": "AWS/ELB",
+    "Statistic": "Average",
+    "Period": { "Ref" : "ScaleUpCheckPeriod" },
+    "EvaluationPeriods": { "Ref" : "ScaleUpEvaluationPeriods" },
+    "ComparisonOperator": "GreaterThanThreshold",
+    "Threshold": { "Ref" : "ScaleUpThreshold" },
+    "AlarmActions": [
+      {
+        "Ref": "ScalingIncreaseGroupSize"
+      }
+    ],
+    "Dimensions": [
+      {
+        "Name": "AutoScalingGroupName",
+        "Value": {
+          "Ref": "AutoScalingGroup"
+        }
+      }
+    ]
+  }
+},
 
 
 "StatisticAlarmHigh": {
