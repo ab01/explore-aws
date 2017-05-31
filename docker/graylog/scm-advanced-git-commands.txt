@@ -1,0 +1,68 @@
+Git Commands
+
+# loop to show tree 
+while :; do clear; tree .git; sleep 1; done
+
+#Creating a hash object in git
+echo "Take up one idea. Make that one idea your life - think of it, dream of it, live on that idea. " | git hash-object -w --stdin
+
+38 characters of hash object value.
+
+#print contents of a file
+git cat-file -p 030b9f36e303755d28cddf2099708d792ac2c194
+
+#print type of file
+git cat-file -t 030b9f36e303755d28cddf2099708d792ac2c194
+
+#command to update index
+git update-index --add --cacheinfo 100644 030b9f36e303755d28cddf2099708d792ac2c194 bewulf.txt
+
+#directory tree will be created and associated with file 
+git write-tree
+git cat-file -p 59885485c6a082fb6bd010164ddf92171796250c
+git commit-tree 59885485c6a082fb6bd010164ddf92171796250c -m "crazy crazy commit"
+
+cat .git/HEAD
+ref: refs/heads/master
+
+git update-ref refs/heads/master 8250b8d3a875aee90c74bbd97d9cc43454d6e430
+
+#command to fetch file through checkout
+git checkout HEAD -- bewulf.txt
+
+cat git-loglive
+#!/bin/bash
+
+while :
+do
+    clear
+    git --no-pager log `git rev-parse HEAD` -n $* --graph --pretty=oneline --abbrev-commit --decorate
+    sleep 1
+done
+
+cat git-loglive
+#!/bin/bash
+
+while :
+do
+    clear
+    #git --no-pager log `git rev-parse HEAD` -n $* --graph --pretty=oneline --abbrev-commit --decorate
+	git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    sleep 1
+done
+
+[user]
+                name = Ankit Bhalla
+                email = ab@xyz.com
+[color]
+                ui = auto
+[alias]
+                lol = log --pretty=oneline --abbrev-commit --graph
+                lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+[credential]
+                helper = cache --timeout 600
+
+#shows master HEAD
+git rev-parse master
+git reflog
+
