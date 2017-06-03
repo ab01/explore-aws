@@ -66,3 +66,34 @@ done
 git rev-parse master
 git reflog
 
+## Git subtree
+
+#Syntax to Inject a Project
+
+git subtree add --prefix target-folder https://bitbucket.org/team/sub.git master --squash
+
+#To Keep the Project up to date
+
+git subtree pull --prefix target-folder https://bitbucket.org/team/sub.git master --squash
+
+#Find the symbolic ref matching a hash (SHA-1)
+
+git ls-remote https://bitbucket.org/team/sub.git | grep <sha-1>
+
+#Git subtree to extract a project
+
+git subtree split --prefix my/project/ (Folder prefix to extract )--branch extracted (where we store it)
+
+git init
+git pull ../path/ extracted
+git remote add origin
+git push origin -u master
+
+## Git interactive commit
+
+git commit --interactive
+
+split (s)--> split hunk into smaller size
+then patch
+
+
