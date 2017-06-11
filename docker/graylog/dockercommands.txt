@@ -34,3 +34,65 @@ docker run --link some-mongo:mongo --link some-elasticsearch:elasticsearch -p 90
 docker run -d -p 9000:9000 --net=mongo-net -e GRAYLOG_WEB_ENDPOINT_URI="http://52.45.134.173:9000/api" -d graylog2/server
 
 #"http://blog.naturalint.com/creating-a-graylog-docker-container/" ==> graylog docker
+
+
+sudo apt-get update
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-cache policy docker-ce
+sudo apt-get install -y docker-ce
+sudo sed -i 's#^ExecStart=.*#ExecStart=/usr/bin/docker daemon -H fd:// -H tcp://0.0.0.0:2375#1' /lib/systemd/system/docker.service	
+sudo systemctl daemon-reload
+sudo service docker restart
+
+Swarm initialized: current node (x42lt4ac49zi5s3pm3s9nqjrt) is now a manager
+docker swarm join --token SWMTKN-1-1iqww495d8mi9l0xubleh9tl5lyn4ekqw5ctqcm9k3y7629z8j-22ayv6ep6n4vflw0xcsigx4q8 192.168.1.191:2377
+
+docker service create -p 80:80 --name webserver nginx
+docker service ls
+docker service ps webserver
+docker service scale webserver=5
+
+#docker visualizer
+
+docker run -it -d -p 5000:5000 -e HOST=ip-192-168-1-191 -e PORT=5000 -v /var/run/docker.sock:/var/run/docker.sock manomarks/visualizer
+
+docker run -it -d -p 8080:8080 -e HOST=ip-192-168-1-191 -v /var/run/docker.sock:/var/run/docker.sock manomarks/visualizer
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+
+https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+
+https://www.digitalocean.com/community/tutorials/how-to-create-a-cluster-of-docker-containers-with-docker-swarm-and-digitalocean-on-ubuntu-16-04
+
+
+
+for i in 1 2 3; do
+docker service create --name go-demo-db-rs$i \
+--reserve-memory 100m \
+--network go-demo \
+mongo:3.2.10 mongod --replSet "rs0"
+done
+
+docker service create --name go-demo-db-util \
+--reserve-memory 100m \
+--network go-demo \
+--mode global \
+mongo:3.2.10 sleep 100000
+
+UTIL_ID=$(docker ps -q --filter label=com.docker.swarm.service.name=go-demo-db-util)
+
+docker exec -it $UTIL_ID sh
+
+mongo --host go-demo-db-rs1 --eval '
+rs.initiate({
+_id: "rs0",
+version: 1,
+members: [
+{_id: 0, host: "go-demo-db-rs1" },
+{_id: 1, host: "go-demo-db-rs2" },
+{_id: 2, host: "go-demo-db-rs3" }
+]
+})
+'
