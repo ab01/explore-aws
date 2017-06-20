@@ -36,6 +36,26 @@ docker run -it -d -p 8080:8080 -e HOST=ip-192-168-1-191 -v /var/run/docker.sock:
 
 To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
 
+##Jenkins BlueOcean pipelines explore
+https://technologyconversations.com/2017/06/16/automating-jenkins-docker-setup/
+
+docker service create --name jenkins \
+-p 8080:8080 \
+-p 50000:50000 \
+-e JENKINS_OPTS="--prefix=/blue" \
+--mount "type=bind,source=$PWD/docker/jenkins,target=/var/jenkins_home" \
+--label com.df.notify=true \
+--label com.df.distribute=true \
+--label com.df.servicePath=/blue \
+--label com.df.port=8080 \
+--network proxy \
+--reserve-memory 1500m \
+jenkinsci/blueocean
+
+
+docker service ps jenkins
+
+
 https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
 
 https://www.digitalocean.com/community/tutorials/how-to-create-a-cluster-of-docker-containers-with-docker-swarm-and-digitalocean-on-ubuntu-16-04
