@@ -36,25 +36,6 @@ docker run -it -d -p 8080:8080 -e HOST=ip-192-168-1-191 -v /var/run/docker.sock:
 
 To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
 
-##Jenkins BlueOcean pipelines explore
-https://technologyconversations.com/2017/06/16/automating-jenkins-docker-setup/
-
-docker service create --name jenkins \
--p 8080:8080 \
--p 50000:50000 \
--e JENKINS_OPTS="--prefix=/blue" \
---mount "type=bind,source=$PWD/docker/jenkins,target=/var/jenkins_home" \
---label com.df.notify=true \
---label com.df.distribute=true \
---label com.df.servicePath=/blue \
---label com.df.port=8080 \
---network proxy \
---reserve-memory 1500m \
-jenkinsci/blueocean
-
-
-docker service ps jenkins
-
 
 https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
 
@@ -97,6 +78,35 @@ docker build -t elkstack:0.1 .
 
 docker run -i -t -d -p 8000:80 --name=apache 4a1c44dded1f httpd -D FOREGROUND
 
+##Jenkins BlueOcean pipelines explore
+https://technologyconversations.com/2017/06/16/automating-jenkins-docker-setup/
+
+docker service create --name jenkins \
+-p 8080:8080 \
+-p 50000:50000 \
+-e JENKINS_OPTS="--prefix=/blue" \
+--mount "type=bind,source=$PWD/docker/jenkins,target=/var/jenkins_home" \
+--label com.df.notify=true \
+--label com.df.distribute=true \
+--label com.df.servicePath=/blue \
+--label com.df.port=8080 \
+--network proxy \
+--reserve-memory 1500m \
+jenkinsci/blueocean
+
+##Nexus Repo 
+
+docker service create --name nexus \
+-p 8081:8081 \
+-e INSTALL4J_ADD_VM_PARAMS="-Xms1g -Xmx1g" \
+--label com.df.notify=true \
+--label com.df.distribute=true \
+--label com.df.servicePath=/nexus \
+--label com.df.port=8081 \
+--network proxy \
+--reserve-memory 400m \
+sonatype/nexus3
+
 
 Docker troubleshooting for error (failed to register layer: devicemapper: Error running deviceCreate (createSnapDevice) dm_task_run failed)
 
@@ -104,3 +114,6 @@ Docker troubleshooting for error (failed to register layer: devicemapper: Error 
 # thin_check /var/lib/docker/devicemapper/devicemapper/metadata
 # thin_check --clear-needs-check-flag /var/lib/docker/devicemapper/devicemapper/metadata
 # systemctl start docker.service
+
+
+
