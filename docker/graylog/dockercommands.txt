@@ -90,14 +90,15 @@ https://technologyconversations.com/2017/06/16/automating-jenkins-docker-setup/
 docker service create --name jenkins \
 -p 8080:8080 \
 -p 50000:50000 \
--e JENKINS_OPTS="--prefix=/blue" \
 --mount "type=bind,source=$PWD/docker/jenkins,target=/var/jenkins_home" \
+--mount "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock" \
 --label com.df.notify=true \
 --label com.df.distribute=true \
 --label com.df.servicePath=/blue \
 --label com.df.port=8080 \
 --network proxy \
 --reserve-memory 1500m \
+--constraint 'node.role==manager' \
 jenkinsci/blueocean
 
 ##Jenkins Agent
