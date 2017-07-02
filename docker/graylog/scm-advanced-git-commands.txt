@@ -43,8 +43,18 @@ git pull ../path/ extracted
 git remote add origin
 git push origin -u master
 
-
 ##Git Commands
+
+# Git to check status
+
+git status
+
+git diff -- changes in unstaged area
+
+git diff --cached changes in staged area
+
+git rebase -i HEAD~ ## rebase to squash changes
+
 
 # loop to show tree 
 while :; do clear; tree .git; sleep 1; done
