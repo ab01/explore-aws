@@ -1,4 +1,50 @@
-Git Commands
+## Git Branch in Linux Prompt
+
+root@ip-192-168-1-197 ~/git-test (refactor) $ cat ~/.bash_profile
+parse_git_branch() {
+     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+}
+export PS1="\u@\h \[\033[32m\]\w\[\033[33m\]\$(parse_git_branch)\[\033[00m\] $ "
+root@ip-192-168-1-197 ~/git-test (refactor) $ git checkout master
+Switched to branch 'master'
+root@ip-192-168-1-197 ~/git-test (master) 
+
+## Git configuration file
+
+## Git .gitconfig file
+
+[user]
+                name = Ankit Bhalla
+                email = ab@xyz.com
+[color]
+                ui = auto
+[alias]
+                lol = log --pretty=oneline --abbrev-commit --graph
+                lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+		
+[credential]
+                helper = cache --timeout 600
+
+
+## Git Live logging script
+
+while :
+do
+    clear
+    #git --no-pager log `git rev-parse HEAD` -n $* --graph --pretty=oneline --abbrev-commit --decorate
+	git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    sleep 1
+done
+
+## Git repo initization
+
+git init
+git pull ../path/ extracted
+git remote add origin
+git push origin -u master
+
+
+##Git Commands
 
 # loop to show tree 
 while :; do clear; tree .git; sleep 1; done
@@ -40,28 +86,6 @@ do
     sleep 1
 done
 
-cat git-loglive
-#!/bin/bash
-
-while :
-do
-    clear
-    #git --no-pager log `git rev-parse HEAD` -n $* --graph --pretty=oneline --abbrev-commit --decorate
-	git log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
-    sleep 1
-done
-
-[user]
-                name = Ankit Bhalla
-                email = ab@xyz.com
-[color]
-                ui = auto
-[alias]
-                lol = log --pretty=oneline --abbrev-commit --graph
-                lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
-[credential]
-                helper = cache --timeout 600
-
 #shows master HEAD
 git rev-parse master
 git reflog
@@ -84,10 +108,6 @@ git ls-remote https://bitbucket.org/team/sub.git | grep <sha-1>
 
 git subtree split --prefix my/project/ (Folder prefix to extract )--branch extracted (where we store it)
 
-git init
-git pull ../path/ extracted
-git remote add origin
-git push origin -u master
 
 ## Git interactive commit
 
