@@ -1,6 +1,11 @@
 # Making VIM default editor in Ubuntu/Debian
 sudo update-alternatives --config editor (select vim.basic)
 
+# Oh-my-zsh plugin
+
+https://gist.github.com/renshuki/3cf3de6e7f00fa7e744a (ubuntu)
+
+
 #Vim Plug-in installation
 sudo apt-get install vim-scripts vim-addon-manager
 vim-addon-manager install git-commit
