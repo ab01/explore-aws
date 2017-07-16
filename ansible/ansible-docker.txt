@@ -1,0 +1,1 @@
+https://opensolitude.com/2015/05/26/building-docker-images-with-ansible.html
