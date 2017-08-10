@@ -1,6 +1,6 @@
 FROM tomcat:8.0.20-jre8
 
-MAINTAINER ankitbh@thoughtworks.com
+MAINTAINER ankitbh@tw.com
 
 # Copy to images tomcat path
 ADD companyNews.war  /usr/local/tomcat/webapps/
