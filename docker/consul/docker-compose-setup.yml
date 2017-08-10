@@ -1,0 +1,62 @@
+version: '2'
+
+services:
+  consul:
+    container_name: consul
+    image: progrium/consul
+    ports:
+      - 8500:8500
+      - 8301:8301
+      - 8300:8300
+    command: -server -bootstrap
+
+  consul-server:
+    container_name: consul
+    image: consul
+    network_mode: host
+    environment:
+      - 'CONSUL_LOCAL_CONFIG={"skip_leave_on_interrupt": true}'
+    command: agent -ui -server -bind=$HOST_IP -bootstrap-expect=1 -client=0.0.0.0
+
+  registrator:
+    container_name: registrator
+    image: gliderlabs/registrator
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+    command: -ip $HOST_IP consul://$CONSUL_IP:8500
+
+  training-proxy:
+    container_name: training-proxy
+    image: proxy/web
+    environment:
+      - 'CONSUL=$DOCKER_IP:8500'
+      - 'SERVICE=tomcat-training'
+    ports:
+      - 81:80
+      - 444:443
+  
+  production-proxy:
+    container_name: training-proxy
+    image: proxy/web
+    environment:
+      - 'CONSUL=$DOCKER_IP:8500'
+      - 'SERVICE=tomcat-production'
+    ports:
+      - 80:80
+      - 443:443
+
+  training:
+    container_name: training
+    image: myapp
+    environment:
+      - 'SERVICE_NAME=tomcat-training'
+    port:
+      - 8079:8080
+
+  production:
+    container_name: production01
+    image: myapp
+    environment:
+      - 'SERVICE_NAME=tomcat-production'
+    port:
+      - 8080:8080

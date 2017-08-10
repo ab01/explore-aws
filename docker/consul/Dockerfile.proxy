@@ -1,0 +1,62 @@
+FROM nginx:1.7
+
+#Install Curl
+RUN apt-get update -qq && apt-get -y install curl unzip wget
+
+#Download and Install Consul Template
+#ENV CT_URL http://bit.ly/2wx06Uq
+#RUN curl -L -o consul-template.tgz $CT_URL
+#tar -C /usr/local/bin --strip-components 1 -zxf -
+
+RUN wget https://releases.hashicorp.com/consul-template/0.12.0/\
+consul-template_0.12.0_linux_amd64.zip
+RUN unzip consul-template_0.12.0_linux_amd64.zip
+RUN mv consul-template /usr/local/bin
+
+#Setup Consul Template Files
+RUN mkdir /etc/consul-templates
+ENV CT_FILE /etc/consul-templates/nginx.conf
+
+#Setup Nginx File
+ENV NX_FILE /etc/nginx/conf.d/app.conf
+
+#Default Variables
+ENV CONSUL consul:8500
+ENV SERVICE consul
+
+#Setup static content directory
+
+RUN mkdir -p /var/www/companyNews/static/companyNews
+ADD static /var/www/companyNews/static/companyNews
+RUN chmod -R 775 /var/www/companyNews
+RUN ls -lrt /var/www/companyNews/static/
+# Command will
+# 1. Write Consul Template File
+# 2. Start Nginx
+# 3. Start Consul Template
+
+CMD echo "upstream companyNews {                 \n\
+  least_conn;                            \n\
+  {{range service \"$SERVICE\"}}         \n\
+  server  {{.Address}}:{{.Port}};        \n\
+  {{else}}server 127.0.0.1:65535;{{end}} \n\
+}                                        \n\
+server {                                 \n\
+  listen 80 default_server;              \n\
+  access_log /var/log/nginx/companyNews_com_access.log; \n\
+  error_log /var/log/nginx/companyNews_com_error.log;   \n\
+
+  location / {                           \n\
+    proxy_pass http://companyNews;       \n\ 
+  }                                      \n\ 
+ 
+  location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ { \n\
+    autoindex on;                      \n\
+    root /var/www/companyNews/static;  \n\
+    expires 1M;                    \n\
+   }                               \n\
+}" > $CT_FILE; \
+/usr/sbin/nginx -c /etc/nginx/nginx.conf \
+& CONSUL_TEMPLATE_LOG=debug consul-template \
+  -consul=$CONSUL \
+  -template "$CT_FILE:$NX_FILE:/usr/sbin/nginx -s reload";
