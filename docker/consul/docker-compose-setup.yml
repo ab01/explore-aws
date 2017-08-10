@@ -32,8 +32,8 @@ services:
       - 'CONSUL=$DOCKER_IP:8500'
       - 'SERVICE=tomcat-training'
     ports:
-      - 81:80
-      - 444:443
+      - 80:80
+      - 443:443
   
   production-proxy:
     container_name: training-proxy
@@ -45,18 +45,18 @@ services:
       - 80:80
       - 443:443
 
-  training:
+  training-myapp:
     container_name: training
     image: myapp
     environment:
       - 'SERVICE_NAME=tomcat-training'
-    port:
-      - 8079:8080
+    ports:
+      - 8080:8080
 
-  production:
+  production-myapp:
     container_name: production01
     image: myapp
     environment:
       - 'SERVICE_NAME=tomcat-production'
-    port:
+    ports:
       - 8080:8080
