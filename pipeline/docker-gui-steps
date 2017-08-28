@@ -1,0 +1,8 @@
+
+# install socat and XQuartz for mac 
+socat TCP-LISTEN:6000,reuseaddr,fork UNIX-CLIENT:\"$DISPLAY\"
+
+# set en0 IP 
+docker run -d -e DISPLAY=$IP:0 jmeter
+
+#Docker will open gui interface of app
