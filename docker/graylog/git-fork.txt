@@ -37,3 +37,23 @@
 9. git checkout master
 10. git pull --rebase upstream master
 11. git status
+
+
+==============
+
+Git Alias with function
+
+ra = "!f() { \
+   git remote add $1 https://github.com/$2.git; \
+}; f"
+
+git ra jsmith jsmith/prj
+
+How to Ignore file if already commited ?
+
+git ls-files -v | grep ^h
+
+Git Commit and tag signing with GPG Keys 
+
+https://alexcabal.com/creating-the-perfect-gpg-keypair/
+https://w3guy.com/sign-git-commits-tags-gpg-github-verified/
