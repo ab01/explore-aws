@@ -1,0 +1,49 @@
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+After=network.target
+
+[Service]
+User=root
+ExecStart=/usr/local/bin/kube-apiserver \
+  --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \
+  --advertise-address=10.0.2.239 \
+  --allow-privileged=true \
+  --apiserver-count=3 \
+  --audit-policy-file=/etc/kubernetes/audit-policy.yaml \
+  --audit-log-maxage=30 \
+  --audit-log-maxbackup=3 \
+  --audit-log-maxsize=100 \
+  --audit-log-path=/var/log/kubernetes/audit.log \
+  --authorization-mode=Node,RBAC \
+  --bind-address=0.0.0.0 \
+  --secure-port=6443 \
+  --client-ca-file=/etc/kubernetes/ssl/ca.pem \
+  --enable-swagger-ui=true \
+  --etcd-cafile=/etc/kubernetes/ssl/ca.pem \
+  --etcd-certfile=/etc/kubernetes/ssl/etcd.pem \
+  --etcd-keyfile=/etc/kubernetes/ssl/etcd-key.pem \
+  --etcd-servers=https://10.0.2.239:2379,https://10.0.2.15:2379,https://10.0.0.198:2379 \
+  --event-ttl=1h \
+  --kubelet-https=true \
+  --insecure-bind-address=127.0.0.1 \
+  --insecure-port=8080 \
+  --service-account-key-file=/etc/kubernetes/ssl/ca-key.pem \
+  --service-cluster-ip-range=10.254.0.0/18 \
+  --service-node-port-range=30000-32000 \
+  --tls-cert-file=/etc/kubernetes/ssl/kubernetes.pem \
+  --tls-private-key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
+  --enable-bootstrap-token-auth \
+  --token-auth-file=/etc/kubernetes/token.csv \
+  --v=2 \
+  --oidc-issuer-url=https://kuberneteslab.auth0.com/ \
+  --oidc-client-id=cjSVN8J5voDxCCKpAiHwZwFTw5XS7GUi  \
+  --oidc-username-claim=name \
+  --oidc-groups-claim=http://authserver.akilimawazo.info/claims/groups 
+Restart=on-failure
+RestartSec=5
+Type=notify
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,30 @@
+[Unit]
+Description=Kubernetes Kubelet
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+After=docker.service
+Requires=docker.service
+
+[Service]
+WorkingDirectory=/var/lib/kubelet
+ExecStart=/usr/local/bin/kubelet \
+  --cgroup-driver=cgroupfs \
+  --hostname-override=ip-10-0-2-239.ec2.internal \
+  --pod-infra-container-image=jicki/pause-amd64:3.0 \
+  --experimental-bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
+  --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+  --cert-dir=/etc/kubernetes/ssl \
+  --cluster_dns=10.254.0.2 \
+  --cluster_domain=cluster.local. \
+  --cloud-provider=aws \
+  --cloud-config=/etc/aws/aws.conf \
+  --allow-privileged=true \
+  --hairpin-mode promiscuous-bridge \
+  --allow-privileged=true \
+  --fail-swap-on=false \
+  --serialize-image-pulls=false \
+  --logtostderr=true \
+  --max-pods=512 \
+  --v=2
+
+[Install]
+WantedBy=multi-user.target
