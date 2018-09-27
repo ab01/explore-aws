@@ -1,0 +1,65 @@
+This code is running as role assumer (A) and wants to assume IAM role assumee suppose (B).
+where XXXXXXXX is the account id of AWS
+------------------------------------------------
+1. The assumer role (A) must have an attached policy giving it the ability to assume the assumee role (B):
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Action": "sts:AssumeRole",
+            "Resource": "arn:aws:iam::XXXXXXXXXXX:role/B"
+        }
+    ]
+}
+
+
+-----------
+
+2. The below trust policy is for the assumee role (B) and explicitly grants the assumer role (A) the ability to assume the assumee role (B)
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::XXXXXXXXXXXX:role/A"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+
+--------------------
+
+3. Without the roles and policies properly configured, it isn’t possible to assume the role. An example error:
+
+      aws sts assume-role --role-arn arn:aws:iam::XXXXXXXXXXXX:role/B --role-session-name "RoleSession1"  > assume-role-output.txt
+
+   in case of your using profile example having profile name -- ab already configured
+
+      aws sts assume-role --role-arn arn:aws:iam::XXXXXXXXXXXX:role/B --role-session-name "RoleSession1" --profile ab > assume-role-output.txt
+
+-----------------
+
+4. Passing Values as Environment variables if you want to use it with CLI commands
+
+      export AWS_SESSION_TOKEN="<session-token-above>" \
+      export AWS_ACCESS_KEY_ID=<key id above> \
+      export AWS_SECRET_ACCESS_KEY=<secret key above>
+
+-----------------
+
+5. while using assume role with terraform templates just have to pass role name just skip above point 4
+
+provider "aws" {
+  region     = "us-east-1"
+  assume_role {
+    role_arn     = "arn:aws:iam::XXXXXXXXXXX:role/B"
+	session_name = "RoleSession1"
+  }
+}
