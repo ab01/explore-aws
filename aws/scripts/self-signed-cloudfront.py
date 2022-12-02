@@ -17,3 +17,6 @@ expires = int(time.time()) + 60 #1 min
 url="https://XXXXXXX.cloudfront.net/XXXXXX"
 signed_url = a.create_signed_url(url, key_pair_id, expires, private_key_file=priv_key_file)
 print signed_url
+
+# signed url via aws command line
+#aws cloudfront sign --url https://XXXXXXXXXXXXX.cloudfront.net/hello.txt --key-pair-id XXXXXXXXXXXXX #cloudfront Access key --private-key file://XXXXXXXXXX.pem --date-less-than 2022-12-05
